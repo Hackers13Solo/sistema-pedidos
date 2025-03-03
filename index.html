@@ -108,17 +108,21 @@
         });
 
         function enviarEmail(nomePedido, dataExpiracao) {
-            const assunto = `Detalhes do Pedido: ${nomePedido}`;
-            const corpo = `O pedido "${nomePedido}" expira em ${dataExpiracao}. Faltam ${calcularDiasRestantes(dataExpiracao)} dias.`;
-
-            window.location.href = `mailto:alexcrystian223@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-        }
-
-        function calcularDiasRestantes(dataExpiracao) {
-            const hoje = new Date();
-            const expiracao = new Date(dataExpiracao);
-            const diferenca = expiracao - hoje;
-            return Math.ceil(diferenca / (1000 * 60 * 60 * 24));
+            fetch('http://localhost:3000/enviar-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nomePedido, dataExpiracao }),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data); // Exibe a resposta do servidor (sucesso ou erro)
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar e-mail');
+            });
         }
     </script>
 </body>

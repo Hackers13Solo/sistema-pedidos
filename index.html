@@ -4,21 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Pedidos - Ambiente Nobre Móveis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .pedido {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .pedido:last-child {
+            border-bottom: none;
+        }
+        .pedido button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pedido button:hover {
+            background-color: #218838;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Adicionar Pedido</h1>
-    <form id="pedidoForm">
-        <label for="nomePedido">Nome do Pedido:</label>
-        <input type="text" id="nomePedido" name="nomePedido" required><br><br>
+    <div class="container">
+        <h1>Gerenciador de Pedidos</h1>
+        <form id="pedidoForm">
+            <input type="text" id="nomePedido" placeholder="Nome do Pedido" required>
+            <input type="date" id="dataExpiracao" required>
+            <button type="submit">Adicionar Pedido</button>
+        </form>
 
-        <label for="dataExpiracao">Data de Expiração:</label>
-        <input type="date" id="dataExpiracao" name="dataExpiracao" required><br><br>
-
-        <button type="submit">Adicionar Pedido</button>
-    </form>
-
-    <h2>Lista de Pedidos</h2>
-    <ul id="listaPedidos"></ul>
+        <h2>Lista de Pedidos</h2>
+        <div id="listaPedidos">
+            <!-- Pedidos serão adicionados aqui dinamicamente -->
+        </div>
+    </div>
 
     <script>
         document.getElementById('pedidoForm').addEventListener('submit', function(event) {
@@ -27,39 +93,33 @@
             const nomePedido = document.getElementById('nomePedido').value;
             const dataExpiracao = document.getElementById('dataExpiracao').value;
 
-            fetch('/adicionarPedido', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ nomePedido, dataExpiracao }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Pedido adicionado com sucesso!');
-                carregarPedidos();
-            })
-            .catch((error) => {
-                console.error('Erro:', error);
-            });
+            // Adiciona o pedido à lista
+            const listaPedidos = document.getElementById('listaPedidos');
+            const pedidoDiv = document.createElement('div');
+            pedidoDiv.className = 'pedido';
+            pedidoDiv.innerHTML = `
+                <span>${nomePedido} - Expira em: ${dataExpiracao}</span>
+                <button onclick="enviarEmail('${nomePedido}', '${dataExpiracao}')">Enviar E-mail</button>
+            `;
+            listaPedidos.appendChild(pedidoDiv);
+
+            // Limpa o formulário
+            document.getElementById('pedidoForm').reset();
         });
 
-        function carregarPedidos() {
-            fetch('/pedidos')
-                .then(response => response.json())
-                .then(data => {
-                    const listaPedidos = document.getElementById('listaPedidos');
-                    listaPedidos.innerHTML = '';
-                    data.forEach(pedido => {
-                        const li = document.createElement('li');
-                        li.textContent = `${pedido.nomePedido} - Expira em: ${pedido.dataExpiracao}`;
-                        listaPedidos.appendChild(li);
-                    });
-                });
+        function enviarEmail(nomePedido, dataExpiracao) {
+            const assunto = `Detalhes do Pedido: ${nomePedido}`;
+            const corpo = `O pedido "${nomePedido}" expira em ${dataExpiracao}. Faltam ${calcularDiasRestantes(dataExpiracao)} dias.`;
+
+            window.location.href = `mailto:alexcrystian223@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
         }
 
-        // Carregar pedidos ao iniciar a página
-        carregarPedidos();
+        function calcularDiasRestantes(dataExpiracao) {
+            const hoje = new Date();
+            const expiracao = new Date(dataExpiracao);
+            const diferenca = expiracao - hoje;
+            return Math.ceil(diferenca / (1000 * 60 * 60 * 24));
+        }
     </script>
 </body>
 </html>

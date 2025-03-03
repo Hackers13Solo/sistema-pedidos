@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Pedidos - Ambiente Nobre Móveis</title>
+</head>
+<body>
+    <h1>Adicionar Pedido</h1>
+    <form id="pedidoForm">
+        <label for="nomePedido">Nome do Pedido:</label>
+        <input type="text" id="nomePedido" name="nomePedido" required><br><br>
+
+        <label for="dataExpiracao">Data de Expiração:</label>
+        <input type="date" id="dataExpiracao" name="dataExpiracao" required><br><br>
+
+        <button type="submit">Adicionar Pedido</button>
+    </form>
+
+    <h2>Lista de Pedidos</h2>
+    <ul id="listaPedidos"></ul>
+
+    <script>
+        document.getElementById('pedidoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const nomePedido = document.getElementById('nomePedido').value;
+            const dataExpiracao = document.getElementById('dataExpiracao').value;
+
+            fetch('/adicionarPedido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nomePedido, dataExpiracao }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Pedido adicionado com sucesso!');
+                carregarPedidos();
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+            });
+        });
+
+        function carregarPedidos() {
+            fetch('/pedidos')
+                .then(response => response.json())
+                .then(data => {
+                    const listaPedidos = document.getElementById('listaPedidos');
+                    listaPedidos.innerHTML = '';
+                    data.forEach(pedido => {
+                        const li = document.createElement('li');
+                        li.textContent = `${pedido.nomePedido} - Expira em: ${pedido.dataExpiracao}`;
+                        listaPedidos.appendChild(li);
+                    });
+                });
+        }
+
+        // Carregar pedidos ao iniciar a página
+        carregarPedidos();
+    </script>
+</body>
+</html>
